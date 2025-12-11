@@ -1,0 +1,16 @@
+{
+  "id": "{6E75A5E1-7DD5-205A-5A18-48687F1613EF}",
+  "name": "KNX Device Trigger",
+  "type": 3,
+  "vendor": "BugForgeNerd",
+  "aliases": [],
+  "parentRequirements": [
+    "{42DFD4E4-5831-4A27-91B9-6FF1B2960260}"
+  ],
+  "childRequirements": [],
+  "implemented": [
+    "{8A4D3B17-F8D7-4905-877F-9E69CEC3D579}"
+  ],
+  "prefix": "KNXDWTR",
+  "url": ""
+}

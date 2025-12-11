@@ -1,0 +1,70 @@
+{
+  "elements": [
+    {
+      "type": "Label",
+      "caption": "KNX Device Tick Monitor — Filtert KNX Telegramme nach Gruppen- und/oder Geräteadresse und legt Tick-Variablen an."
+    },
+    {
+      "type": "CheckBox",
+      "name": "Active",
+      "caption": "Modul aktiv",
+      "captionPlacement": "left"
+    },
+    {
+      "type": "NumberSpinner",
+      "name": "TickLength",
+      "caption": "Tick-Länge (ms)",
+      "minimum": 50,
+      "maximum": 5000,
+      "suffix": "ms"
+    },
+    {
+      "type": "List",
+      "name": "DeviceList",
+      "caption": "Filterliste (GA / PA)",
+      "rowCount": 8,
+      "add": true,
+      "delete": true,
+      "sort": {
+        "column": "GA",
+        "direction": "ascending"
+      },
+      "columns": [
+        {
+          "caption": "Name",
+          "name": "Name",
+          "width": "180px",
+          "add": "",
+          "edit": {
+            "type": "ValidationTextBox"
+          }
+        },
+        {
+          "caption": "Gruppenadresse (z. B. 1/1/16)",
+          "name": "GA",
+          "width": "120px",
+          "add": "",
+          "edit": {
+            "type": "ValidationTextBox"
+          }
+        },
+        {
+          "caption": "Geräteadresse (z. B. 1.1.101)",
+          "name": "PA",
+          "width": "120px",
+          "add": "",
+          "edit": {
+            "type": "ValidationTextBox"
+          }
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "type": "Button",
+      "caption": "Variablen aktualisieren",
+      "onClick": "KNXDTM_UpdateVariableList($id);"
+    }
+  ]
+}

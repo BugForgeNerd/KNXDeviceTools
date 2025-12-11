@@ -1,0 +1,68 @@
+{
+    "elements": [
+        {
+            "type": "Label",
+            "caption": "KNXDeviceTrigger - Kurzbezeichnung"
+        },
+        {
+            "type": "CheckBox",
+            "name": "Active",
+            "caption": "Modul aktiv"
+        },
+        {
+            "type": "List",
+            "name": "DeviceList",
+            "caption": "Telegramm-Aktionen",
+            "rowCount": 6,
+            "add": {
+                "GA": "",
+                "PA": "",
+                "ModuleID": 0,
+                "Function": ""
+            },
+            "delete": true,
+            "columns": [
+                {
+                    "caption": "Gruppenadresse",
+                    "name": "GA",
+                    "width": "130px",
+                    "add": "",
+                    "edit": {
+                        "type": "ValidationTextBox"
+                    }
+                },
+                {
+                    "caption": "Geräteadresse",
+                    "name": "PA",
+                    "width": "130px",
+                    "add": "",
+                    "edit": {
+                        "type": "ValidationTextBox"
+                    }
+                },
+                {
+                    "caption": "Modul auswählen",
+                    "name": "ModuleID",
+                    "width": "180px",
+                    "add": 0,
+                    "edit": {
+                        "type": "SelectInstance"
+                    }
+                },
+                {
+                    "caption": "Funktionsname (ohne Klammern)",
+                    "name": "Function",
+                    "width": "150px",
+                    "add": "",
+                    "edit": {
+                        "type": "ValidationTextBox"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "Label",
+            "caption": "Hinweis: Funktionsname ohne Klammern eingeben, z. B. RMSHUT_devicelook"
+        }
+    ]
+}

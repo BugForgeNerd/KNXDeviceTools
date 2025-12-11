@@ -1,0 +1,15 @@
+{
+  "id": "{2812A9BF-A140-5C22-8745-CFE7475B8FA1}",
+  "name": "KNX Device Tick Monitor",
+  "type": 3,
+  "vendor": "BugForgeNerd",
+  "aliases": [],
+  "parentRequirements": [
+    "{42DFD4E4-5831-4A27-91B9-6FF1B2960260}"
+  ],
+  "childRequirements": [],
+  "implemented": [
+    "{8A4D3B17-F8D7-4905-877F-9E69CEC3D579}"
+  ],
+  "prefix": "KNXDTM",
+  "url": ""}

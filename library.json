@@ -1,0 +1,12 @@
+{
+  "id": "{651B5D9F-972E-4175-FD90-A856DC7DA4CE}",
+  "author": "BugForgeNerd",
+  "name": "KNX Device Tools",
+  "url": "https://github.com/BugForgeNerd/KNXDeviceTools",
+  "compatibility": {
+    "version": "8.2"
+  },
+  "version": "0.1",
+  "build": 0,
+  "date": 1763234485
+}
