@@ -1,6 +1,6 @@
 # KNX Device Tools für IP-Symcon
 
-[![IP-Symcon is awesome!](https://img.shields.io/badge/IP--Symcon-8.2-blue.svg)](https://www.symcon.de)
+[![IP-Symcon is awesome!](https://img.shields.io/badge/IP--Symcon-9.0-blue.svg)](https://www.symcon.de)
 ![License](https://img.shields.io/badge/license-Apache2.0-blue.svg)
 
 Die **KNX Device Tools** Gruppen bieten verschiedene Module für IP-Symcon, die darauf ausgelegt sind, KNX-Telegramme zu überwachen, zu filtern und automatisch Variablen für definierte Geräte und Gruppenadressen zu erstellen. Diese Module unterstützen eine Vielzahl von KNX-Datentypen (DPTs) und erleichtern die Integration von KNX-Geräten in IP-Symcon.
