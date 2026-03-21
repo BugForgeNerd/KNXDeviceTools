@@ -7,22 +7,24 @@
  * sudo /etc/init.d/symcon restart
  *
  * ToDo:
- * - 
+ * - KNX Gateway auf Vorhandensein überprüfen
  * - 
 */
 
 
-class KNXDeviceTickMonitor extends IPSModule
+class KNXDeviceTickMonitor extends IPSModuleStrict
 {
 	/**
      * Erzeugt das Modul und initialisiert die notwendigen Eigenschaften und Timer.
      */
-    public function Create()
+    public function Create(): void
     {
         parent::Create();
 
-        $this->ConnectParent("{1C902193-B044-43B8-9433-419F09C641B8}");
-
+		if ((float) IPS_GetKernelVersion() < 8.2) {
+            $this->ConnectParent("{1C902193-B044-43B8-9433-419F09C641B8}");
+        }
+		
         $this->RegisterPropertyBoolean('Active', false);
         $this->RegisterPropertyString('DeviceList', '[]');
         $this->RegisterPropertyInteger('TickLength', 500); // Tickdauer in ms
@@ -35,7 +37,7 @@ class KNXDeviceTickMonitor extends IPSModule
      * Wird aufgerufen, wenn Änderungen an den Modul-Eigenschaften vorgenommen werden.
      * Aktualisiert die Liste der überwachten Variablen, wenn das Modul aktiv ist.
      */
-    public function ApplyChanges()
+    public function ApplyChanges(): void
     {
         parent::ApplyChanges();
         if ($this->ReadPropertyBoolean('Active')) {
@@ -48,10 +50,10 @@ class KNXDeviceTickMonitor extends IPSModule
      * Wenn eine Übereinstimmung zwischen den empfangenen Adressen und der DeviceList gefunden wird,
      * wird der Tick auf `true` gesetzt und der Timer aktiviert.
      */
-	public function ReceiveData($JSONString)
+	public function ReceiveData(string $JSONString): string
 	{
 		$data = json_decode($JSONString, true);
-		if (!is_array($data)) return;
+		if (!is_array($data)) return '';
 
 		// --- Schutz gegen nicht existierende Keys ---
 		$GA1 = $data['GroupAddress1'] ?? '';
@@ -65,7 +67,7 @@ class KNXDeviceTickMonitor extends IPSModule
 		$pa = "$PA1.$PA2.$PA3";
 
 		$list = json_decode($this->ReadPropertyString('DeviceList'), true);
-		if (!is_array($list)) return;
+		if (!is_array($list)) return '';
 
 		foreach ($list as $entry) {
 			$gaFilter = $entry['GA'] ?? '';
@@ -75,18 +77,16 @@ class KNXDeviceTickMonitor extends IPSModule
 				($paFilter === '' || $paFilter === $pa)) {
 
 				$ident = 'KNX_' . str_replace('/', '_', $entry['GA']) . '_' . str_replace('.', '_', $entry['PA']);
-				$varID = $this->GetIDForIdent($ident);
 
-				if ($varID > 0) {
-					// Tick auf true setzen
-					SetValue($varID, true);
+				if (IPS_VariableExists($this->GetIDForIdent($ident))) {
+					$this->SetValue($ident, true);
 
-					// Timer auf TickLength setzen
 					$tickLength = $this->ReadPropertyInteger('TickLength');
 					$this->SetTimerInterval('ResetTickTimer', $tickLength);
 				}
 			}
 		}
+		return '';
 	}
 
 
@@ -94,7 +94,7 @@ class KNXDeviceTickMonitor extends IPSModule
      * Setzt alle Variablen, die einen Tick-Wert haben, auf `false` zurück
      * und stoppt den Timer, wenn die Zeit abgelaufen ist.
      */
-    public function ResetTick()
+    public function ResetTick(): void
     {
 		$this->SendDebug('ResetTick', "test",0);
         $list = json_decode($this->ReadPropertyString('DeviceList'), true);
@@ -103,8 +103,10 @@ class KNXDeviceTickMonitor extends IPSModule
         foreach ($list as $entry) {
             $ident = 'KNX_' . str_replace('/', '_', $entry['GA']) . '_' . str_replace('.', '_', $entry['PA']);
             $varID = $this->GetIDForIdent($ident);
-            if ($varID > 0) {
-                SetValue($varID, false);
+            //if ($varID > 0) {
+			if ($this->GetIDForIdent($ident) > 0) {
+                //SetValue($varID, false);  // hier kommt das ReadOnly Problem, daher wie folgt lösen
+				$this->SetValue($ident, false);
             }
         }
 
@@ -116,7 +118,7 @@ class KNXDeviceTickMonitor extends IPSModule
      * Aktualisiert die Liste der Variablen basierend auf der `DeviceList`-Eigenschaft.
      * Neue Variablen werden erstellt, wenn sie noch nicht existieren. Nicht mehr benötigte Variablen werden entfernt.
      */
-    public function UpdateVariableList()
+    public function UpdateVariableList(): void
     {
         $list = json_decode($this->ReadPropertyString('DeviceList'), true);
         if (!is_array($list)) $list = [];
@@ -137,11 +139,16 @@ class KNXDeviceTickMonitor extends IPSModule
 
             $ident = 'KNX_' . str_replace('/', '_', $ga) . '_' . str_replace('.', '_', $pa);
 
-            if (!isset($existing[$ident])) {
-                $this->RegisterVariableBoolean($ident, "$ga / $pa");
-            } else {
-                unset($existing[$ident]);
-            }
+			if (!isset($existing[$ident])) {
+				$created = $this->RegisterVariableBoolean($ident, "$ga / $pa");
+
+				// nur beim ersten Erstellen initialisieren!
+				if ($created) {
+					$this->SetValue($ident, false);
+				}
+			} else {
+				unset($existing[$ident]);
+			}
         }
 
         foreach ($existing as $ident => $id) {
@@ -153,7 +160,7 @@ class KNXDeviceTickMonitor extends IPSModule
      * Gibt das Konfigurationsformular für das Modul zurück.
      * Ermöglicht die Benutzerkonfiguration der Modulseinstellungen über das Webinterface.
      */
-	public function GetConfigurationForm()
+	public function GetConfigurationForm(): string
 	{
 		// --- Kernel-Version prüfen ---
 		$kernel = IPS_GetKernelVersion();
@@ -275,7 +282,6 @@ class KNXDeviceTickMonitor extends IPSModule
 			'actions'  => $actions
 		]);
 	}
-
 
 }
 ?>

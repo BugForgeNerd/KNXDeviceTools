@@ -1,0 +1,79 @@
+{
+  "elements": [
+    {
+      "type": "Label",
+      "caption": "KNX Device Watcher — Filtert KNX Telegramme nach Gruppen- und/oder Geräteadresse und legt Variablen an."
+    },
+    {
+      "type": "CheckBox",
+      "name": "Active",
+      "caption": "Modul aktiv",
+      "captionPlacement": "left"
+    },
+    {
+      "type": "CheckBox",
+      "name": "Debug",
+      "caption": "Debug-Ausgaben aktivieren",
+      "captionPlacement": "left"
+    },
+    {
+      "type": "List",
+      "name": "DeviceList",
+      "caption": "Watchlist",
+      "rowCount": 8,
+      "add": true,
+      "delete": true,
+      "sort": {
+        "column": "Name",
+        "direction": "ascending"
+      },
+      "columns": [
+        {
+          "caption": "GroupAddress (z.B. 1/1/16)",
+          "name": "GA",
+          "width": "160px",
+          "add": "",
+          "edit": {
+            "type": "ValidationTextBox",
+            "validate": "^\\d{1,2}/\\d{1,2}/\\d{1,3}$",
+            "errorMessage": "Ungültige GA! Format: x/x/x, z.B. 1/1/16"
+          }
+        },
+        {
+          "caption": "DeviceAddress (z.B. 1.1.101)",
+          "name": "PA",
+          "width": "160px",
+          "add": "",
+          "edit": {
+            "type": "ValidationTextBox",
+            "validate": "^\\d{1,2}\\.\\d{1,2}\\.\\d{1,3}$",
+            "errorMessage": "Ungültige PA! Format: x.x.x, z.B. 1.1.101"
+          }
+        },
+        {
+      "caption": "DPT (optional)",
+      "name": "DPT",
+      "width": "auto",
+      "edit": {
+        "type": "Select",
+        "options": [
+          { "label": "1.001 - Schalten (bool)",      "value": "1.001" },
+          { "label": "5.001 - Prozentwert 0–100 %", "value": "5.001" },
+          { "label": "5.004 - Wertebereich 0–255",  "value": "5.004" },
+          { "label": "7.001 - Unsigned Integer",     "value": "7.001" },
+          { "label": "9.001 - Temperatur",           "value": "9.001" },
+          { "label": "12.001 - 4-Byte Unsigned",    "value": "12.001" }
+        ]
+      }
+    }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "type": "Button",
+      "caption": "Variablen aktualisieren",
+      "onClick": "KNXDW_UpdateVariableListWithInfo($id);"
+    }
+  ]
+}

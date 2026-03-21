@@ -7,23 +7,25 @@
  * sudo /etc/init.d/symcon restart
  *
  * ToDo:
- * - 
+ * - KNX Gateway auf Vorhandensein überprüfen 
  * - 
 */
 
 
-class KNXDeviceWatcher extends IPSModule
+class KNXDeviceWatcher extends IPSModuleStrict
 {
 
     /**
      * Erstellen des Moduls
      */
-    public function Create()
+    public function Create(): void
     {
         parent::Create();
 
         // Verbindung zum KNX-Gateway herstellen
-        $this->ConnectParent("{1C902193-B044-43B8-9433-419F09C641B8}");
+		if ((float) IPS_GetKernelVersion() < 8.2) {
+            $this->ConnectParent("{1C902193-B044-43B8-9433-419F09C641B8}");
+        }
 
         // Konfigurationsparameter
         $this->RegisterPropertyBoolean('Active', false);
@@ -35,7 +37,7 @@ class KNXDeviceWatcher extends IPSModule
      * 
      * Wird aufgerufen, wenn Änderungen an den Konfigurationseinstellungen vorgenommen wurden.
      */
-    public function ApplyChanges()
+    public function ApplyChanges(): void
     {
         parent::ApplyChanges();
 
@@ -54,11 +56,11 @@ class KNXDeviceWatcher extends IPSModule
      * 
      * @param string $JSONString Das empfangene KNX-Telegramm im JSON-Format
      */
-	public function ReceiveData($JSONString)
+	public function ReceiveData(string $JSONString): string
 	{
 		$data = json_decode($JSONString, true);
 		if (!is_array($data)) {
-			return;
+			return '';
 		}
 		//IPS_LogMessage('KNXTest', print_r($data, true));
 
@@ -83,7 +85,7 @@ class KNXDeviceWatcher extends IPSModule
 
 		$list = json_decode($this->ReadPropertyString('DeviceList'), true);
 		if (!is_array($list)) {
-			return;
+			return '';
 		}
 
 		foreach ($list as $entry) {
@@ -95,7 +97,11 @@ class KNXDeviceWatcher extends IPSModule
 				($paFilter === '' || $paFilter === $pa)) {
 
 				// Ident aus Watchlist
-				$ident = 'KNX_' . str_replace('/', '_', $entry['GA']) . '_' . str_replace('.', '_', $entry['PA']);
+				// kann Notice werfen wenn Keys fehlen, daher Fix folgend
+				//$ident = 'KNX_' . str_replace('/', '_', $entry['GA']) . '_' . str_replace('.', '_', $entry['PA']);
+				$gaEntry = $entry['GA'] ?? '';
+				$paEntry = $entry['PA'] ?? '';
+				$ident = 'KNX_' . str_replace('/', '_', $gaEntry) . '_' . str_replace('.', '_', $paEntry);
 				//IPS_LogMessage ("Watcher", "ident: " . $ident);
 
 				if ($this->GetIDForIdent($ident) > 0) {
@@ -112,6 +118,7 @@ class KNXDeviceWatcher extends IPSModule
 				}
 			}
 		}
+		return '';
 	}
 
 
@@ -121,7 +128,7 @@ class KNXDeviceWatcher extends IPSModule
      * Diese Funktion erstellt oder aktualisiert die Variablen basierend auf der 'DeviceList'.
      * Sie stellt sicher, dass alle in der Liste konfigurierten Geräte korrekt angelegt sind.
      */
-    public function UpdateVariableList()
+    public function UpdateVariableList(): void
     {
         $list = json_decode($this->ReadPropertyString('DeviceList'), true);
         if (!is_array($list)) {
@@ -163,18 +170,25 @@ class KNXDeviceWatcher extends IPSModule
 				
 				// Variable registrieren
 				switch ($varType) {
-					case 0: // Boolean
+					case 0:
 						$this->RegisterVariableBoolean($ident, $name);
+						$this->SetValue($ident, false);
 						break;
-					case 1: // Integer
+
+					case 1:
 						$this->RegisterVariableInteger($ident, $name);
+						$this->SetValue($ident, 0);
 						break;
-					case 2: // Float
+
+					case 2:
 						$this->RegisterVariableFloat($ident, $name);
+						$this->SetValue($ident, 0.0);
 						break;
-					case 3: // String
+
+					case 3:
 					default:
 						$this->RegisterVariableString($ident, $name);
+						$this->SetValue($ident, '');
 						break;
 				}
 				
@@ -198,7 +212,7 @@ class KNXDeviceWatcher extends IPSModule
      * Diese Methode gibt das JSON für das Konfigurationsformular zurück,
      * das die Benutzeroberfläche des Moduls beschreibt.
      */
-	public function GetConfigurationForm()
+	public function GetConfigurationForm(): string
 	{
 		// --- Kernel-Version prüfen ---
 		$kernel = IPS_GetKernelVersion();
@@ -359,7 +373,7 @@ class KNXDeviceWatcher extends IPSModule
      * @param string $dpt Der DPT-Typ (z. B. "1.001", "5.001").
      * @return mixed Der dekodierte Wert.
      */
-    protected function DecodeKNXValue($rawValue, $dpt)
+    protected function DecodeKNXValue($rawValue, $dpt): mixed
     {
         if ($rawValue === '' || !is_string($rawValue)) {
             return null;
@@ -397,7 +411,7 @@ class KNXDeviceWatcher extends IPSModule
 	 * @param string $raw 2 Byte vom KNX Telegramm
 	 * @return float Temperatur in °C
 	 */
-	protected function DecodeDPT9_001($raw)
+	protected function DecodeDPT9_001($raw): ?float
 	{
 		// Gateway sendet manchmal 3 Bytes, z.B.: 0x80 0x07 0xD0
 		// Wir benötigen nur die letzten 2 Byte
@@ -447,7 +461,7 @@ class KNXDeviceWatcher extends IPSModule
      * @param string $raw Rohdaten vom KNX Telegramm (mindestens 1 Byte)
      * @return float Prozentwert (0.00–100.00 %)
      */	
-	protected function DecodeDPT5_001($raw)
+	protected function DecodeDPT5_001($raw): ?float
 	{
 		if (strlen($raw) < 1) {
 			return null;
@@ -475,7 +489,7 @@ class KNXDeviceWatcher extends IPSModule
 	 * @param string $raw Rohdaten aus dem KNX-Telegramm
 	 * @return int|null Wert zwischen 0 und 255
 	 */
-	protected function DecodeDPT5_004($raw)
+	protected function DecodeDPT5_004($raw): ?int
 	{
 		if (strlen($raw) < 1) {
 			return null;
@@ -505,7 +519,7 @@ class KNXDeviceWatcher extends IPSModule
 	 * @param string $raw KNX-Rohdaten (mindestens 2 Byte)
 	 * @return int|null Wert zwischen 0 und 65535
 	 */
-	protected function DecodeDPT7_001($raw)
+	protected function DecodeDPT7_001($raw): ?int
 	{
 		if (strlen($raw) < 2) {
 			return null;
@@ -537,7 +551,7 @@ class KNXDeviceWatcher extends IPSModule
 	 * @param string $raw KNX-Rohdaten (mindestens 4 Byte)
 	 * @return int|float Unsigned 32-Bit Wert (0–4294967295)
 	 */
-	protected function DecodeDPT12_001($raw)
+	protected function DecodeDPT12_001($raw): int|float|null
 	{
 		if (strlen($raw) < 4) {
 			return null;
@@ -574,10 +588,34 @@ class KNXDeviceWatcher extends IPSModule
 	 * @param string $data UTF-8 String aus ReceiveData()
 	 * @return string Reine Binärdaten (1:1 der KNX-Payload)
 	 */
+	/**
 	protected function KNX_Utf8ToBinary(string $data): string
 	{
 		//return utf8_decode($data);
 		return mb_convert_encoding($data, 'ISO-8859-1', 'UTF-8');
+	}
+	*/
+	protected function KNX_Utf8ToBinary(string $data): string
+	{
+		$result = '';
+		$len = strlen($data);
+
+		for ($i = 0; $i < $len; $i++) {
+			$byte = ord($data[$i]);
+
+			// UTF-8 2-Byte Sequenz (C2/C3)
+			if ($byte === 0xC2 || $byte === 0xC3) {
+				$i++;
+				if ($i < $len) {
+					$next = ord($data[$i]);
+					$result .= chr(($byte === 0xC2) ? $next : ($next + 64));
+				}
+			} else {
+				$result .= chr($byte);
+			}
+		}
+
+		return $result;
 	}
 
 /**

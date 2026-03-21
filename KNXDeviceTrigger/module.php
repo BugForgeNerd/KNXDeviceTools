@@ -7,23 +7,25 @@
  * sudo /etc/init.d/symcon restart
  *
  * ToDo:
- * - 
+ * - KNX Gateway auf Vorhandensein überprüfen 
  * - 
 */
 
 
-class KNXDeviceTrigger extends IPSModule
+class KNXDeviceTrigger extends IPSModuleStrict
 {
 
     /**
      * Erzeugt das Modul, registriert die Eigenschaften und stellt die Verbindung zum übergeordneten KNX-Modul her.
      */
-    public function Create()
+    public function Create(): void
     {
         parent::Create();
 
         // KNX Parent verbinden
-        $this->ConnectParent("{1C902193-B044-43B8-9433-419F09C641B8}");
+		if ((float) IPS_GetKernelVersion() < 8.2) {
+            $this->ConnectParent("{1C902193-B044-43B8-9433-419F09C641B8}");
+        }
 
         // Eigenschaften
         $this->RegisterPropertyBoolean('Active', false);
@@ -34,7 +36,7 @@ class KNXDeviceTrigger extends IPSModule
      * Wird aufgerufen, wenn Änderungen an den Modul-Eigenschaften vorgenommen werden.
      * Validiert die Geräteliste, wenn das Modul aktiv ist.
      */
-    public function ApplyChanges()
+    public function ApplyChanges(): void
     {
         parent::ApplyChanges();
 
@@ -48,7 +50,7 @@ class KNXDeviceTrigger extends IPSModule
      * Gibt Warnungen aus, wenn ungültige Funktionen angegeben sind, blockiert jedoch nicht den Speichervorgang.
      * Zeigt ein Popup mit den Warnungen im WebFront an.
      */
-    private function ValidateDeviceList()
+    private function ValidateDeviceList(): void
     {
         $list = json_decode($this->ReadPropertyString('DeviceList'), true);
 
@@ -60,7 +62,8 @@ class KNXDeviceTrigger extends IPSModule
         $warnText = "";
 
         foreach ($list as $index => $row) {
-            $function = trim($row['Function']);
+            //$function = trim($row['Function']);
+			$function = trim($row['Function'] ?? '');
 
             if ($function !== '' && !function_exists($function)) {
                 $warnText .= "Zeile " . ($index+1) . ": Funktion '{$function}' existiert nicht!\n";
@@ -89,12 +92,12 @@ class KNXDeviceTrigger extends IPSModule
      * Verarbeitet empfangene KNX-Telegramme und prüft, ob die empfangenen Adressen mit der `DeviceList` übereinstimmen.
      * Wenn ja, wird die entsprechende Funktion aufgerufen.
      */
-	public function ReceiveData($JSONString)
+	public function ReceiveData(string $JSONString): string
 	{
-		if (!$this->ReadPropertyBoolean('Active')) return;
+		if (!$this->ReadPropertyBoolean('Active')) return '';
 
 		$data = json_decode($JSONString, true);
-		if (!is_array($data)) return;
+		if (!is_array($data)) return '';
 
 		// --- Schutz gegen nicht existierende Keys ---
 		$GA1 = $data['GroupAddress1'] ?? '';
@@ -112,7 +115,7 @@ class KNXDeviceTrigger extends IPSModule
 
 		// Liste der Einträge laden
 		$list = json_decode($this->ReadPropertyString('DeviceList'), true);
-		if (!is_array($list)) return;
+		if (!is_array($list)) return '';
 
 		foreach ($list as $entry)
 		{
@@ -151,6 +154,7 @@ class KNXDeviceTrigger extends IPSModule
 				$this->SendDebug('Exception', $e->getMessage(), 0);
 			}
 		}
+		return '';
 	}
 
 
@@ -158,7 +162,7 @@ class KNXDeviceTrigger extends IPSModule
      * Gibt das Konfigurationsformular für das Modul zurück.
      * Ermöglicht es dem Benutzer, das Modul zu konfigurieren, einschließlich der Geräteliste und Funktionen.
      */
-	public function GetConfigurationForm()
+	public function GetConfigurationForm(): string
 	{
 		// --- Kernel-Version prüfen ---
 		$kernel = IPS_GetKernelVersion();

@@ -1,6 +1,6 @@
 # KNX Device Tools für IP-Symcon
 
-[![IP-Symcon is awesome!](https://img.shields.io/badge/IP--Symcon-9.0-blue.svg)](https://www.symcon.de)
+[![IP-Symcon is awesome!](https://img.shields.io/badge/IP--Symcon-8.2-blue.svg)](https://www.symcon.de)
 ![License](https://img.shields.io/badge/license-Apache2.0-blue.svg)
 
 Die **KNX Device Tools** Gruppen bieten verschiedene Module für IP-Symcon, die darauf ausgelegt sind, KNX-Telegramme zu überwachen, zu filtern und automatisch Variablen für definierte Geräte und Gruppenadressen zu erstellen. Diese Module unterstützen eine Vielzahl von KNX-Datentypen (DPTs) und erleichtern die Integration von KNX-Geräten in IP-Symcon.
@@ -9,6 +9,7 @@ Aktuell stehen folgende drei Module zur Verfügung:
 - KNXDeviceTickMonitor
 - KNXDeviceTrigger
 - KNXDeviceWatcher
+- KNXTrafficLogger
 
 **KNXDeviceTickMonitor:**
 Dieses Modul ermöglicht die Überwachung mehrerer Gruppen- und Geräteadresskombinationen im KNX-Datenfluss. Für jede Kombination wird eine Variable unterhalb des Moduls erstellt. Die Variable wird für die im Modul konfigurierbare Tick-Länge auf "True" gesetzt, wenn eine gefilterte Gruppen- oder Geräteadresskombination im KNX-Datenfluss erkannt wird. Anschließend fällt die Variable auf "False" zurück. Dieser "Tick" kann dann mit den Standard-Symcon-Tools (wie Ereignissen) weiterverarbeitet werden.
@@ -18,6 +19,17 @@ Auch mit diesem Modul können mehrere Gruppen- und Geräteadresskombinationen im
 
 **KNXDeviceWatcher:**
 Das Modul KNXDeviceWatcher funktioniert grundsätzlich ähnlich wie der KNXDeviceTickMonitor, jedoch mit dem Unterschied, dass die Variablen unterhalb des Moduls direkt mit den Daten aus dem KNX-Datenfluss befüllt werden. Die Daten werden automatisch übernommen. Es wird jedoch empfohlen, die Daten aus den integrierten KNX-Modulen von Symcon zu verwenden, da die unterstützten Datentypen in diesem Modul begrenzt sind. Für die DPT der Gruppe 1.001 gelten auch die gleichen Werte für 1.002 und ähnliche Gruppen, wobei sich die Einheiten unterscheiden. Das gleiche gilt für die DPT 9.001.
+
+**KNXTrafficLogger:**
+Dieses Modul dient zur Protokollierung des gesamten KNX-Telegrammverkehrs in Dateien. Alle empfangenen Telegramme werden im JSONL-Format (eine Zeile pro Telegramm) gespeichert und enthalten Zeitstempel, Gruppenadresse (GA), Geräteadresse (PA), Nutzdaten sowie den erkannten APCI-Typ (read/write/response).
+
+Das Modul unterstützt:
+- automatische tägliche Log-Rotation
+- Begrenzung der maximalen Dateigröße über Zeilenanzahl
+- Begrenzung der Anzahl gespeicherter Logdateien
+- optionale Speicherung von Rohdaten (falls vom Gateway geliefert)
+
+Die erzeugten Logdateien eignen sich ideal zur Analyse, Debugging oder Weiterverarbeitung (z. B. mit externen Tools wie Grafana, Python oder ELK-Stack).
 
 ---
 
@@ -46,6 +58,8 @@ Der Auslöser für diese Überlegung war bei mir ein Modul zur Steuerung meiner 
   - `9.001` – Temperatur (2-Byte Float)
   - `12.001` – 4-Byte Unsigned Integer (0–4294967295)
 - Debug-Funktion zur Anzeige empfangener Telegramme und Variablenupdates.
+- Protokollierung von KNX-Telegrammen in JSONL-Dateien.
+- Automatische Log-Rotation und Dateiverwaltung.
 - Einfaches Konfigurationsformular in IP-Symcon.
 
 ---
@@ -84,6 +98,7 @@ Die **DeviceList** ist eine Liste von Geräten, die überwacht werden sollen. Je
 - Filtert Telegramme nach GA/PA.
 - Erstellt/aktualisiert Variablen entsprechend der DeviceList.
 - Unterstützt unterschiedliche Datentypen automatisch.
+- KNXTrafficLogger speichert alle empfangenen Telegramme persistent im Dateisystem und ermöglicht eine spätere Analyse unabhängig von IP-Symcon.
 
 ---
 
