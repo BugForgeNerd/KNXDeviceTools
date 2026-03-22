@@ -78,8 +78,12 @@ class KNXDeviceWatcher extends IPSModuleStrict
 
 		// Rohdatenwert (binär) lesen und hexadezimal anzeigen
 		$rawValueUtf8 = $data['Data'] ?? '';
-		$rawValue = $this->KNX_Utf8ToBinary($rawValueUtf8);
+		// Schritt 1: UTF8 → "echter" String
+		$tmp = $this->KNX_Utf8ToBinary($rawValueUtf8);
+		// Schritt 2: HEX-String → Binary
+		$rawValue = $this->KNX_HexStringToBinary($tmp);
 		$valueHex = bin2hex($rawValue);
+		$this->SendDebug('RAW FIX',"UTF8=$rawValueUtf8 | tmp=$tmp | final=$valueHex",0);
 
 		$this->SendDebug('KNX Telegramm', "GA=$ga | PA=$pa | Raw=$valueHex", 0);
 
@@ -89,12 +93,16 @@ class KNXDeviceWatcher extends IPSModuleStrict
 		}
 
 		foreach ($list as $entry) {
+			$this->SendDebug('Check',"Prüfe: GA=$ga gegen {$entry['GA']} | PA=$pa gegen {$entry['PA']} | DPT={$entry['DPT']}",0);
+
 			$gaFilter = $entry['GA'] ?? '';
 			$paFilter = $entry['PA'] ?? '';
 
 			// Filter prüfen
 			if (($gaFilter === '' || $gaFilter === $ga) &&
 				($paFilter === '' || $paFilter === $pa)) {
+					
+				$this->SendDebug('MATCH',"Treffer! GA=$ga | PA=$pa | DPT={$entry['DPT']} | Raw=$valueHex",0);
 
 				// Ident aus Watchlist
 				// kann Notice werfen wenn Keys fehlen, daher Fix folgend
@@ -106,6 +114,7 @@ class KNXDeviceWatcher extends IPSModuleStrict
 
 				if ($this->GetIDForIdent($ident) > 0) {
 					//IPS_LogMessage("Watcher", "GetIDForIdent >0");
+					$this->SendDebug('DecodeInput',"Raw(hex)=$valueHex | Raw(len)=" . strlen($rawValue) . " | DPT={$entry['DPT']}",0);
 					$value = $this->DecodeKNXValue($rawValue, $entry['DPT'] ?? '');
 					//IPS_LogMessage("Watcher", "RawValue Hex: " . bin2hex($rawValue) . " | DPT: " . ($entry['DPT'] ?? ''));
 
@@ -114,7 +123,8 @@ class KNXDeviceWatcher extends IPSModuleStrict
 						$this->SetValue($ident, $value);
 					}
 
-					$this->SendDebug('Update', "GA=$ga PA=$pa → DPT={$entry['DPT']} | Value=$value", 0);
+					$this->SendDebug('Update',"GA=$ga | PA=$pa | DPT={$entry['DPT']} | Raw=$valueHex | Value=$value (" . gettype($value) . ")",0);
+	
 				}
 			}
 		}
@@ -644,6 +654,16 @@ class KNXDeviceWatcher extends IPSModuleStrict
 			default:
 				return 3; // String
 		}
+	}
+
+	protected function KNX_HexStringToBinary(string $data): string
+	{
+		// Prüfen ob es wirklich HEX ist
+		if (ctype_xdigit($data) && (strlen($data) % 2 === 0)) {
+			return hex2bin($data);
+		}
+
+		return $data;
 	}
 
 }
