@@ -2,7 +2,7 @@
   "id": "{E26AE98C-1FC9-755B-E766-3FB448A345A7}",
   "name": "KNX Traffic Logger",
   "type": 3,
-  "vendor": "BugForgeNerd",
+  "vendor": "",
   "aliases": [],
   "parentRequirements": [
     "{42DFD4E4-5831-4A27-91B9-6FF1B2960260}"

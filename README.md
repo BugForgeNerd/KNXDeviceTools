@@ -1,6 +1,6 @@
 # KNX Device Tools für IP-Symcon
 
-[![IP-Symcon is awesome!](https://img.shields.io/badge/IP--Symcon-8.2-blue.svg)](https://www.symcon.de)
+[![IP-Symcon is awesome!](https://img.shields.io/badge/IP--Symcon-8.1-blue.svg)](https://www.symcon.de)
 ![License](https://img.shields.io/badge/license-Apache2.0-blue.svg)
 
 Die **KNX Device Tools** Gruppen bieten verschiedene Module für IP-Symcon, die darauf ausgelegt sind, KNX-Telegramme zu überwachen, zu filtern und automatisch Variablen für definierte Geräte und Gruppenadressen zu erstellen. Diese Module unterstützen eine Vielzahl von KNX-Datentypen (DPTs) und erleichtern die Integration von KNX-Geräten in IP-Symcon.
@@ -65,7 +65,7 @@ Der Auslöser für diese Überlegung war bei mir ein Modul zur Steuerung meiner 
 ---
 
 ## Installation
-Bitte beachten, dass die Module erst ab Symcon Version 8.2 lauffähig sind!
+Bitte beachten, dass die Module erst ab Symcon Version 8.1 lauffähig sind!
 1. Modul in den IP-Symcon Modul-Store einbinden oder lokal installieren.
 2. Instanz des **KNX Device Watcher** anlegen.
 3. Verbindung zum KNX-Gateway herstellen (über Parent-Instanz, GUID: `{1C902193-B044-43B8-9433-419F09C641B8}`).
@@ -111,7 +111,7 @@ Die **DeviceList** ist eine Liste von Geräten, die überwacht werden sollen. Je
 
 ### Danksagung an das Symcon-Team
 
-Ich möchte mich herzlich beim gesamten Symcon-Team bedanken, das das KNX-Gateway um wichtige Eigenschaften erweitert hat, um die Nutzung der neuen Module zu ermöglichen. Diese Funktionalität steht nun allen Anwendern zur Verfügung, die die Version 8.2 oder höher von Symcon verwenden. Eure Arbeit hat einen erheblichen Beitrag dazu geleistet, den Funktionsumfang für unsere KNX-Anwendungen weiter zu verbessern!
+Ich möchte mich herzlich beim gesamten Symcon-Team bedanken, das das KNX-Gateway um wichtige Eigenschaften erweitert hat, um die Nutzung der neuen Module zu ermöglichen. Diese Funktionalität steht nun allen Anwendern zur Verfügung, die die Version 8.1 oder höher von Symcon verwenden. Eure Arbeit hat einen erheblichen Beitrag dazu geleistet, den Funktionsumfang für unsere KNX-Anwendungen weiter zu verbessern!
 
 Vielen Dank für eure kontinuierliche Unterstützung und hervorragende Arbeit!
 
