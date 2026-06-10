@@ -112,7 +112,9 @@ class KNXDeviceWatcher extends IPSModuleStrict
 				$ident = 'KNX_' . str_replace('/', '_', $gaEntry) . '_' . str_replace('.', '_', $paEntry);
 				//IPS_LogMessage ("Watcher", "ident: " . $ident);
 
-				if ($this->GetIDForIdent($ident) > 0) {
+				$varID = $this->GetOwnIDForIdent($ident);
+
+				if ($varID !== false && IPS_VariableExists($varID)) {
 					//IPS_LogMessage("Watcher", "GetIDForIdent >0");
 					$this->SendDebug('DecodeInput',"Raw(hex)=$valueHex | Raw(len)=" . strlen($rawValue) . " | DPT={$entry['DPT']}",0);
 					$value = $this->DecodeKNXValue($rawValue, $entry['DPT'] ?? '');
@@ -656,6 +658,19 @@ class KNXDeviceWatcher extends IPSModuleStrict
 		}
 	}
 
+	/**
+	 * Wandelt einen KNX-Datenstring von HEX nach Binär um.
+	 *
+	 * Prüft zunächst, ob der übergebene String ausschließlich aus
+	 * gültigen HEX-Zeichen besteht und eine gerade Zeichenanzahl besitzt.
+	 * In diesem Fall erfolgt die Umwandlung mittels hex2bin().
+	 *
+	 * Ist der Inhalt bereits binär oder kein gültiger HEX-String,
+	 * wird der ursprüngliche Inhalt unverändert zurückgegeben.
+	 *
+	 * @param string $data KNX-Daten als HEX- oder Binärstring
+	 * @return string Binärdaten zur weiteren Verarbeitung
+	 */
 	protected function KNX_HexStringToBinary(string $data): string
 	{
 		// Prüfen ob es wirklich HEX ist
@@ -664,6 +679,34 @@ class KNXDeviceWatcher extends IPSModuleStrict
 		}
 
 		return $data;
+	}
+
+	/**
+	 * Liefert die Objekt-ID eines eigenen Modulobjektes anhand des Identifiers.
+	 *
+	 * Kapselt den Zugriff auf GetIDForIdent() und verhindert Fehler,
+	 * wenn das Objekt noch nicht existiert oder bereits entfernt wurde.
+	 *
+	 * Rückgabe:
+	 * - int   → gültige Objekt-ID
+	 * - false → Objekt nicht vorhanden
+	 *
+	 * @param string $ident Identifier des Modulobjektes
+	 * @return int|false
+	 */
+	private function GetOwnIDForIdent(string $ident): int|false
+	{
+		if ($ident === '') {
+			return false;
+		}
+
+		$id = @$this->GetIDForIdent($ident);
+
+		if ($id === false || $id <= 0) {
+			return false;
+		}
+
+		return $id;
 	}
 
 }

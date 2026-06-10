@@ -78,7 +78,8 @@ class KNXDeviceTickMonitor extends IPSModuleStrict
 
 				$ident = 'KNX_' . str_replace('/', '_', $entry['GA']) . '_' . str_replace('.', '_', $entry['PA']);
 
-				if (IPS_VariableExists($this->GetIDForIdent($ident))) {
+				$varID = $this->GetOwnIDForIdent($ident);
+				if ($varID !== false && IPS_VariableExists($varID)) {
 					$this->SetValue($ident, true);
 
 					$tickLength = $this->ReadPropertyInteger('TickLength');
@@ -96,18 +97,17 @@ class KNXDeviceTickMonitor extends IPSModuleStrict
      */
     public function ResetTick(): void
     {
-		$this->SendDebug('ResetTick', "test",0);
+		$this->SendDebug('ResetTick', 'Tick zurückgesetzt', 0);
         $list = json_decode($this->ReadPropertyString('DeviceList'), true);
         if (!is_array($list)) return;
 
         foreach ($list as $entry) {
             $ident = 'KNX_' . str_replace('/', '_', $entry['GA']) . '_' . str_replace('.', '_', $entry['PA']);
-            $varID = $this->GetIDForIdent($ident);
-            //if ($varID > 0) {
-			if ($this->GetIDForIdent($ident) > 0) {
-                //SetValue($varID, false);  // hier kommt das ReadOnly Problem, daher wie folgt lösen
+			$varID = $this->GetOwnIDForIdent($ident);
+
+			if ($varID !== false && IPS_VariableExists($varID)) {
 				$this->SetValue($ident, false);
-            }
+			}
         }
 
         // Timer stoppen
@@ -281,6 +281,34 @@ class KNXDeviceTickMonitor extends IPSModuleStrict
 			'elements' => array_merge($warnLabel, $baseElements),
 			'actions'  => $actions
 		]);
+	}
+
+	/**
+	 * Liefert die Objekt-ID eines eigenen Modulobjektes anhand des Identifiers.
+	 *
+	 * Kapselt den Zugriff auf GetIDForIdent() und verhindert Fehler,
+	 * wenn das Objekt noch nicht existiert oder bereits entfernt wurde.
+	 *
+	 * Rückgabe:
+	 * - int   → gültige Objekt-ID
+	 * - false → Objekt nicht vorhanden
+	 *
+	 * @param string $ident Identifier des Modulobjektes
+	 * @return int|false
+	 */
+	private function GetOwnIDForIdent(string $ident): int|false
+	{
+		if ($ident === '') {
+			return false;
+		}
+
+		$id = @$this->GetIDForIdent($ident);
+
+		if ($id === false || $id <= 0) {
+			return false;
+		}
+
+		return $id;
 	}
 
 }
