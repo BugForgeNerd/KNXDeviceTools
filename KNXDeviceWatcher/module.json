@@ -2,7 +2,7 @@
   "id": "{D198E0DC-FC5F-9911-E917-FFDDC4C7DD37}",
   "name": "KNX Device Watcher",
   "type": 3,
-  "vendor": "",
+  "vendor": "KNX",
   "aliases": [],
   "parentRequirements": [
     "{42DFD4E4-5831-4A27-91B9-6FF1B2960260}"
@@ -12,5 +12,5 @@
     "{8A4D3B17-F8D7-4905-877F-9E69CEC3D579}"
   ],
   "prefix": "KNXDW",
-  "url": ""
+  "url": "https://github.com/BugForgeNerd/KNXDeviceTools"
 }

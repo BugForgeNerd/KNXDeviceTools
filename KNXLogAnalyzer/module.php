@@ -1,11 +1,29 @@
 <?php
-
 /**
- * KNXLogAnalyzer
- * Liest KNXTrafficLogger JSONL-Dateien und stellt sie in der Tile-View dar.
- */
+ * NEUSTART des Moduls: MC_ReloadModule(59139, "KNXDeviceTools");
+ * sudo /etc/init.d/symcon start
+ * sudo /etc/init.d/symcon stop
+ * sudo /etc/init.d/symcon restart
+ *
+ * ToDo:
+ * - 
+ * - 
+*/
+
 class KNXLogAnalyzer extends IPSModuleStrict
 {
+
+	/**
+	 * Create
+	 *
+	 * Wird beim Erstellen der Modulinstanz aufgerufen.
+	 * - Registriert Modul-Eigenschaften für Logpfad, Debugmodus und Spaltenanzeige
+	 * - Registriert Attribute für Theme, UI-Einstellungen, zuletzt gewählte Datei und Relationstabellen
+	 * - Initialisiert die Tile-Visualisierung
+	 *
+	 * Parameter: keine
+	 * Rückgabewert: void
+	 */
     public function Create(): void
     {
         parent::Create();
@@ -28,6 +46,17 @@ class KNXLogAnalyzer extends IPSModuleStrict
         $this->SetVisualizationType(1);
     }
 
+	/**
+	 * ApplyChanges
+	 *
+	 * Wird nach dem Laden oder Ändern der Instanzkonfiguration aufgerufen.
+	 * - Prüft den konfigurierten Logpfad
+	 * - Setzt den Instanzstatus abhängig von der Verfügbarkeit des Logverzeichnisses
+	 * - Schreibt optional Debuginformationen
+	 *
+	 * Parameter: keine
+	 * Rückgabewert: void
+	 */
     public function ApplyChanges(): void
     {
         parent::ApplyChanges();
@@ -40,7 +69,7 @@ class KNXLogAnalyzer extends IPSModuleStrict
         if ($path === '' || !is_dir($path)) {
             $this->SetStatus(201);
             if ($this->ReadPropertyBoolean('DebugActive')) {
-                $this->SendDebug('ApplyChanges', 'Logordner nicht gefunden', 0);
+                $this->SendDebug('ApplyChanges', $this->Translate('Log folder not found'), 0);
             }
             return;
         }
@@ -48,6 +77,17 @@ class KNXLogAnalyzer extends IPSModuleStrict
         $this->SetStatus(102);
     }
 
+	/**
+	 * GetConfigurationForm
+	 *
+	 * Erstellt das Konfigurationsformular der Modulinstanz.
+	 * - Definiert Eingabefelder für Logpfad und Anzeigeoptionen
+	 * - Prüft die installierte IP-Symcon-Version
+	 * - Stellt Bedien- und Prüfaktionen bereit
+	 *
+	 * Parameter: keine
+	 * Rückgabewert: JSON-kodierte Formularbeschreibung
+	 */
     public function GetConfigurationForm(): string
     {
         $kernel = IPS_GetKernelVersion();
@@ -56,7 +96,7 @@ class KNXLogAnalyzer extends IPSModuleStrict
         if (version_compare($kernel, '8.2', '<')) {
             $warnings[] = [
                 'type'    => 'Label',
-                'caption' => 'Hinweis: Dieses Modul ist für IP-Symcon ab 8.2 vorgesehen. Aktuell: ' . $kernel,
+                'caption' => $this->Translate('Note: This module is intended for IP-Symcon 8.2 or newer. Current version:') . ' ' . $kernel,
                 'color'   => '8B2500'
             ];
         }
@@ -66,42 +106,42 @@ class KNXLogAnalyzer extends IPSModuleStrict
                 [
                     'type'    => 'ValidationTextBox',
                     'name'    => 'LogPath',
-                    'caption' => 'Ordner der KNX-Logdateien'
+                    'caption' => $this->Translate('Folder of KNX log files')
                 ],
                 [
                     'type'    => 'CheckBox',
                     'name'    => 'DebugActive',
-                    'caption' => 'Debugausgaben aktiv'
+                    'caption' => $this->Translate('Enable debug output')
                 ],
                 [
                     'type'    => 'ExpansionPanel',
-                    'caption' => 'Tabellenspalten',
+                    'caption' => $this->Translate('Table columns'),
                     'expanded' => true,
                     'items'   => [
                         [
                             'type'    => 'CheckBox',
                             'name'    => 'ShowGAText',
-                            'caption' => 'GA Langtext anzeigen'
+                            'caption' => $this->Translate('Show GA long text')
                         ],
                         [
                             'type'    => 'CheckBox',
                             'name'    => 'ShowPAText',
-                            'caption' => 'PA Langtext anzeigen'
+                            'caption' => $this->Translate('Show PA long text')
                         ],
                         [
                             'type'    => 'CheckBox',
                             'name'    => 'ShowPayload',
-                            'caption' => 'Payload anzeigen'
+                            'caption' => $this->Translate('Show payload')
                         ],
                         [
                             'type'    => 'CheckBox',
                             'name'    => 'ShowAPCI',
-                            'caption' => 'Write/Read anzeigen'
+                            'caption' => $this->Translate('Show write/read')
                         ],
                         [
                             'type'    => 'CheckBox',
                             'name'    => 'ShowLen',
-                            'caption' => 'LEN anzeigen'
+                            'caption' => $this->Translate('Show LEN')
                         ]
                     ]
                 ]
@@ -109,33 +149,109 @@ class KNXLogAnalyzer extends IPSModuleStrict
             'actions' => [
                 [
                     'type'    => 'Button',
-                    'caption' => 'Logdateien prüfen',
+                    'caption' => $this->Translate('Check log files'),
                     'onClick' => 'echo KNXLOGAN_TestConfiguration($id);'
                 ],
                 [
                     'type'    => 'Label',
-                    'caption' => 'Gelesen werden Dateien nach dem Muster *_KNXTrafficLog.jsonl. Die Langtexte werden in der Instanz gespeichert.'
-                ]
+                    'caption' => $this->Translate('Files matching the pattern *_KNXTrafficLog.jsonl are read. Long texts are stored in the instance.')
+                ],
+				[
+					"type"    => "Label",
+					"width"   => "50%",
+					"caption" => ""
+				],
+				[
+					"type"    => "Label",
+					"width"   => "50%",
+					"caption" => $this->Translate("LICENSE_NOTICE")
+				],
+				[
+					"type"    => "Label",
+					"width"   => "50%",
+					"bold"    => true,
+					"caption" => $this->Translate("DONATION_HEADER")
+				],
+				[
+					"type"    => "Label",
+					"width"   => "50%",
+					"caption" => $this->Translate("DONATION_TEXT")
+				],
+				// PayPal-Button als Image
+				[
+					"type"  => "RowLayout",
+					"items" => [
+						[
+							"type"    => "Image",
+							"onClick" => "echo '" . $this->Translate("PAYPAL_LINK") . "';",
+							"image"   => "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADsAAAA6CAYAAAAOeSEWAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAoiSURBVGhD7ZprkBTVFcd/5/bsC1heAvIKLAgsuwqYGI3ECPjAfAhRtOKjKjGlljwUTfIhSlZNrVtBVqIJsomFIBUrqZRVPkvFqphofMVoJEYSXrsrbxU1PFR2kd3Zmb4nH3qmp+fua4adjR/0V9U1955zunv+fe89t/t2wxcIcQ19p9ZQNeBiPEa7nh5RPiPhH8Kwh5Pje3ilLumG9JXCi62qvw3Puys4tDqn0EiZlC8dE/m12gI8D/4GdtT8GcTd8YQovNjqu1/EeOcFlajY7spp0nqci2P1eWLmB2y55WDEcUIY19BnRKZ3bsE0rqB0vbt4QGQ+SfvCSZWryl1XvhRW7Iz6YZAeq27rud25K4Fua0tgMjLjiGGl48ybwopN+JWISJc6IDI20+W0uGg5unPkghmuHzJr9dCIM28KK9bEqoLWiP757nC7sHuF0kJTdpHSo/H2c5ygvCisWHS6U8+uQqQVo60cjXO7eyTeyPiIM28KK1YkJTb1512tmlQ6WpVEC8HWCh2tmd+Olsh2TEkeV2yHhmNc6dPcW1ixms7EqdaR6DhUaDsM8cNC+xHCLR75zdoOC20Hhc8OCMfeVdqPKMNL26Kny5fCiZ1bWwpM7jrRpGx+e8SWB2qFjlbh0gs2sH7vNa47Vwon9mDZKRiJBZVI66axSQXtLWt1z+ByZXB5KcgGb/2u8113LhROrBBk4lSlU/KxiXRkhrCb58DUU9Il42vsrmxnbhROrGrkzsnNTN2I1S7iumPGaZmycBYP7j456s6FwoklnYnDenbrdiU2V8aPV8aPjVoEjU2LGnKhcGKFqkyDRrtzqnyiYsXARV0MUT9Z6pp6ozBiL7/cA6nsNNVEsR2Zcj5j9bw5ypguHo3FO+KaeqMwYrfNHI/IwIwh0qIAahW1GUN3Y9W9COfMVmaflW0L8Im17XSNvVEYsaZoujvTZBFt1Z5IX4SBA5XLLlHmnetGBCjNXF/V6pp7ozBisVVZVbflbC53eQIjRyoXnq8sWwxVlW5ABtE/uaZc6Kk9cqeq/gE8b0l2Bo6QOKpMHg2lJdlZuqgIBg6E4cNg7BgoH+Tu2RVKMjmLG6dscx29URix1b98GSNzXXOAwpxZltMrC3Mu5RmWVCx0zblQiG4soKlu3EWrKjBpXGGEwtESqz9xjbnSd7HTVw5HGBWo6kJTzIPBkUR94rRj7ZXxGybtcx250nexalLza3SOjTB0oHaaUvJFZR+auJClk//iuvKh72JN9M6Jzq07bHB2PR9UdqLcSssnM1gy9XXXnS99vORA9ap7MOanQaWLrnxWlXJ25Ca+Mx2oPg7SimoHokcwZg/t/iZumrwTKcwCOZ3/2QlQvepZjPmOaw6787e/oVROdJ0R9A4WT+rzMmku9L0bQxeLbJHGGN5LN07o311Tf9E3sWfUDkCoCCppgenOklpS7UmsKpQmd7jm/qJvYluLpyDidcrAacGDyhTPc3wRRI5w3dTDrrm/6JtYz0zKNjiie2pVAJXmQiag3ujhsufAxPkfEfc9fN2M1U3BZjPbzKnK2BE9LGzL8zx73zOutb/oezbuifX7HgAWu+YQ5VaWVNzrmvuLvnXj3nEytYNPk2vqT/pPrKqA9PBQio+Yza6xP+nfbrx2zyKMN8M1A6D2ZZZOetI1f8mXfEmPZI/ZyhVfh9g3s2zB6tkHeO0vsaPu42xfAVm3Zy5iZmIjS64YH5H38I6/lPdq4rq90xGZj7WCxp7ghgkHssVW370RYxZ0uXCmtIL/fbbXbMx2FIh1+99C9GuuOcVhlIUsqcj9mXbd3l8gcjsACb7FsorXo1OPQPpNnIK1cXzNLPiKlKPyALW1hZ+ual+KOZ8otEPWW/YRwG8j9RwwwfEUKDZNZM2zZ9SWgZkICqpxBhcNY9TxgST81IM5IDKWJ0uHhPVC8ZWJ4xAGBBX5iKGbyhl6bBCqkbsrqaJW87jQ4cU7yKIJH5M1ZivrZ1DkbQHAahM7lgcrhtNWnklxbBMIqI1TOrScycMsW3YvxOMCVMqA7SW27fG4lKWWOP3NJUYOxK1ZAIDYN2i87c3wXDNqx5Mo+17g023cfKVHzKQWvuVFFk+8EIB1+y9G9CkAlA9ZUjGONe+UUFp8BcI5qMbA/rvE2OfifvECDCD8jSGtW/m0vAW0GHiVxRXzAFJvygGP6Zmxqo2AMLfW46AsCmMs/xzEB0OObf/0aYq8VCIL9onLgFsxMhIAX+rjfuJJYrHVCGDlH8BsSL0E2172R2JmLgrY5FUYGROeQ2kChIf2lpDQa0M7vFa6Yc/Edms2AsE6jwjgEbfeYYyOAMCaH3FkSAueXxwcT5vTB4h2i6owKYmZR/XdTRwacAjjLQpaVRW1vz7WNuBhjARCrTZh7VqsvhEKBVDbxFWJt0F3BQ/xnMnMe0YBsPWMmzFmLghY/2Eab3sUidxWil7Bun1NdMhB4JLgeNiY2vvbffNUKBTZDKwFtiAEQgFsohmxkfFvwsWBjNjwsx5AGIbxpmFkKCJgbQLr34GRQ4jMD/6ovjxlwvuns2P5jZz61rlY+1a4v+83UVdnUR5JHdsjkVxQXH1XNZ4E603Wf48YNwEafKIQMgJhKkLwLkRoQ1maVEYjzApC9HEOTDiTxRXLKNKzQfaHexfFtmclO5HwYSMj1ka+ibD2aZL+Gnz7K6x/M76dRmPNSuCCIETBT96/67nfxAF47DEf2E3gsmh5cALfPhK+5BJZ2CGxhxApC2L8a9la80nwwBARq/owyhpU7kXtDfhMYWnFBjyTeSOtch91YgG4dlI7qu+m7Ed573cfZV089RrTxWDMXv6ox/a9wWt7VR9frqZ5eedJXMl8GWq8MCuXzVoxri0hFwUx+iG7ftwCQHPNNqpXbUfkVMR8N0yH6jfQePtfAVjffBJSGgwB5SiLK67uZvUiMwtYDb9hLF67r7oDzgZAdKfeWafy4HWVwazCMT5Y/346NmjZ/zRPQCRI/cqHNC8/lg7IQnRbMKwFjNxLVX091fUr2hJFb2JkWCoqvJJBF9B0Vw4s1m5jZHtNJqQ0822E8E43QkElmCkAPLOB9XvrWL9/VYfRVxGKghga5U4VlOqgrjupqwt6QCjWi75M1qbgT3ZBWfujWLsDFESG4sV+hvFuB4LMB+lsmiGhmWUX1TiqP+SVuszXX1ldrqeH+diDCAeCso4G+TnoLYjxwxCrTYzcNwrRVC/IjFdCsSr/xWoDNtmA2tXRgCz+VXcctXPwtR7VF7B2I8nkMkhchPUbsH4DXuL3kT2EGMuCooL6dTTWZD+wi+4GGoAGPP6Q5YuyZNxhtGM2yhqQF1GeArkGXy8L9tcGPPsExrfh8bDroofIvjcuMN5p9Zf66j2BIPj+a5z29rxUMvtc6D+x01eMwRRtwZgRqG0pMfar8a01e9yw/yd53Gvmi+nAk+sRXQh2zuct9AvH/wAcerqGMemSoQAAAABJRU5ErkJggg=="
+						],
+						[
+							"type"    => "Label",
+							"caption" => " "
+						],
+						[
+							"type"    => "Label",
+							"width"   => "70%",
+							"caption" => $this->Translate("DONATION_INFO")
+						],
+						[
+							"type"    => "Label",
+							"caption" => " "
+						]
+					]
+				],
+				[
+					"type"    => "Label",
+					"width"   => "50%",
+					"caption" => $this->Translate("PAYPAL_LINK")
+				]
             ]
         ]);
     }
 
+	/**
+	 * GetVisualizationTile
+	 *
+	 * Erstellt die HTML-Tile-Ansicht des Moduls.
+	 * - Lädt die Visualisierungsvorlage aus module.html
+	 * - Erzeugt die Initialdaten für die Anzeige
+	 * - Übergibt die Daten Base64-kodiert an das Frontend
+	 *
+	 * Parameter: keine
+	 * Rückgabewert: HTML-Code der Visualisierung
+	 */
     public function GetVisualizationTile(): string
     {
         $file = __DIR__ . '/module.html';
         if (!is_file($file)) {
-            return '<div style="padding:12px;color:red">module.html fehlt</div>';
+            return '<div style="padding:12px;color:red">' . $this->Translate('module.html is missing') . '</div>';
         }
 
         $html = file_get_contents($file);
         $state = $this->BuildView([]);
         if ($this->ReadPropertyBoolean('DebugActive')) {
-            $this->SendDebug('Tile', 'Initialdaten erzeugt', 0);
+            $this->SendDebug('Tile', $this->Translate('Initial data created'), 0);
         }
 
         return str_replace('%%INITIAL_STATE_B64%%', base64_encode($this->Json($state)), $html);
     }
 
+	/**
+	 * RequestAction
+	 *
+	 * Verarbeitet Aktionen aus der Tile-Visualisierung.
+	 * - Lädt Ansichten neu
+	 * - Speichert Benutzereinstellungen
+	 * - Speichert Gruppen- und physikalische Adressrelationen
+	 * - Aktualisiert die Darstellung
+	 *
+	 * Parameter:
+	 * - Ident: Aktionskennung
+	 * - Value: Übergebene Aktionsdaten
+	 *
+	 * Rückgabewert: void
+	 */
     public function RequestAction(string $Ident, mixed $Value): void
     {
         if ($this->ReadPropertyBoolean('DebugActive')) {
@@ -157,16 +273,30 @@ class KNXLogAnalyzer extends IPSModuleStrict
             case 'SaveRelations':
                 $result = $this->SaveRelations($data);
                 $view = is_array($data['view'] ?? null) ? $data['view'] : $data;
-                $this->SendView($this->BuildView($view), $result['ok'] ? ('Gespeichert: ' . (string)$result['count']) : (string)$result['error']);
+                $this->SendView($this->BuildView($view), $result['ok'] ? ($this->Translate('Saved:') . ' ' . (string)$result['count']) : (string)$result['error']);
                 return;
         }
 
         $this->SendView([
             'ok'    => false,
-            'error' => 'Ungültige Aktion: ' . $Ident
+            'error' => $this->Translate('Invalid action:') . ' ' . $Ident
         ]);
     }
 
+	/**
+	 * SendView
+	 *
+	 * Überträgt einen Datenzustand an die Tile-Visualisierung.
+	 * - Ergänzt optionale Statusmeldungen
+	 * - Aktualisiert die Visualisierung
+	 * - Protokolliert Fehler bei aktivem Debugmodus
+	 *
+	 * Parameter:
+	 * - state: Zu übertragender Ansichtsstatus
+	 * - modalInfo: Optionale Meldung für die Oberfläche
+	 *
+	 * Rückgabewert: void
+	 */
     private function SendView(array $state, string $modalInfo = ''): void
     {
         if ($modalInfo !== '') {
@@ -182,6 +312,19 @@ class KNXLogAnalyzer extends IPSModuleStrict
         }
     }
 
+	/**
+	 * NormalizeRequestValue
+	 *
+	 * Wandelt übergebene Aktionsdaten in ein Array um.
+	 * - Akzeptiert Arrays direkt
+	 * - Dekodiert JSON-Strings
+	 * - Liefert bei ungültigen Daten ein leeres Array zurück
+	 *
+	 * Parameter:
+	 * - value: Zu normalisierende Eingabedaten
+	 *
+	 * Rückgabewert: Normalisierte Daten als Array
+	 */
     private function NormalizeRequestValue(mixed $value): array
     {
         if (is_array($value)) {
@@ -198,6 +341,18 @@ class KNXLogAnalyzer extends IPSModuleStrict
         return [];
     }
 
+	/**
+	 * DebugValue
+	 *
+	 * Wandelt beliebige Werte für Debugausgaben in Text um.
+	 * - Unterstützt Strings, Skalare, Nullwerte und Arrays
+	 * - Nutzt JSON für komplexe Datentypen
+	 *
+	 * Parameter:
+	 * - value: Zu protokollierender Wert
+	 *
+	 * Rückgabewert: Formatierter Text
+	 */
     private function DebugValue(mixed $value): string
     {
         if (is_string($value)) {
@@ -209,21 +364,46 @@ class KNXLogAnalyzer extends IPSModuleStrict
         return json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 
+	/**
+	 * TestConfiguration
+	 *
+	 * Prüft die Konfiguration des Moduls.
+	 * - Kontrolliert den konfigurierten Logordner
+	 * - Ermittelt die Anzahl verfügbarer KNX-Logdateien
+	 * - Liefert eine Statusmeldung zurück
+	 *
+	 * Parameter: keine
+	 * Rückgabewert: Ergebnistext der Prüfung
+	 */
     public function TestConfiguration(): string
     {
         $path = $this->NormalizePath($this->ReadPropertyString('LogPath'));
 
         if ($path === '') {
-            return 'Kein Logordner eingetragen.';
+            return $this->Translate('No log folder configured.');
         }
 
         if (!is_dir($path)) {
-            return 'Logordner nicht gefunden: ' . $path;
+            return $this->Translate('Log folder not found:') . ' ' . $path;
         }
 
-        return 'OK: ' . count($this->GetLogFiles()) . ' KNX-Logdateien gefunden.';
+        return 'OK: ' . count($this->GetLogFiles()) . ' ' . $this->Translate('KNX log files found.');
     }
 
+	/**
+	 * BuildView
+	 *
+	 * Erstellt den vollständigen Datenzustand für die Visualisierung.
+	 * - Lädt Logdateien und KNX-Daten
+	 * - Verarbeitet Filter, Seiten und Einstellungen
+	 * - Ermittelt Statistiken und Metadaten
+	 * - Bereitet die Darstellung für das Frontend auf
+	 *
+	 * Parameter:
+	 * - request: Benutzereinstellungen und Filterdaten
+	 *
+	 * Rückgabewert: Vollständiger Ansichtsstatus als Array
+	 */
     private function BuildView(array $request): array
     {
         $start = microtime(true);
@@ -281,7 +461,7 @@ class KNXLogAnalyzer extends IPSModuleStrict
         $pageRows = array_slice($filtered, $offset, $pageSize);
 
         if ($this->ReadPropertyBoolean('DebugActive')) {
-            $this->SendDebug('BuildView', 'Datei=' . $file . ', Gesamt=' . count($rows) . ', Gefiltert=' . $total . ', Seite=' . $page, 0);
+            $this->SendDebug('BuildView', 'File=' . $file . ', Total=' . count($rows) . ', Filtered=' . $total . ', Page=' . $page, 0);
         }
 
         return [
@@ -304,6 +484,7 @@ class KNXLogAnalyzer extends IPSModuleStrict
                 'ga' => $gaText,
                 'pa' => $paText
             ],
+            'texts' => $this->GetFrontendTexts(),
             'meta' => [
                 'total' => count($rows),
                 'filtered' => $total,
@@ -317,6 +498,16 @@ class KNXLogAnalyzer extends IPSModuleStrict
         ];
     }
 
+	/**
+	 * GetColumns
+	 *
+	 * Ermittelt die sichtbaren Tabellenspalten.
+	 * - Berücksichtigt die Modulkonfiguration
+	 * - Liefert die Sichtbarkeit aller Spalten zurück
+	 *
+	 * Parameter: keine
+	 * Rückgabewert: Spaltenkonfiguration als Array
+	 */
     private function GetColumns(): array
     {
         return [
@@ -331,6 +522,17 @@ class KNXLogAnalyzer extends IPSModuleStrict
         ];
     }
 
+	/**
+	 * GetLogFiles
+	 *
+	 * Liest alle verfügbaren KNX-Logdateien ein.
+	 * - Sucht Dateien nach dem definierten Namensmuster
+	 * - Ermittelt Größe und Zeitinformationen
+	 * - Bereitet die Dateiliste für die Oberfläche auf
+	 *
+	 * Parameter: keine
+	 * Rückgabewert: Liste gefundener Logdateien
+	 */
     private function GetLogFiles(): array
     {
         $path = $this->NormalizePath($this->ReadPropertyString('LogPath'));
@@ -364,12 +566,29 @@ class KNXLogAnalyzer extends IPSModuleStrict
         return $files;
     }
 
+	/**
+	 * ReadRows
+	 *
+	 * Liest eine KNX-Logdatei zeilenweise ein.
+	 * - Dekodiert JSONL-Einträge
+	 * - Ergänzt Gruppen- und physikalische Adressbezeichnungen
+	 * - Filtert Systemeinträge aus
+	 * - Bereitet Datensätze für die Anzeige auf
+	 *
+	 * Parameter:
+	 * - file: Zu lesende Logdatei
+	 * - gaText: Gruppenadress-Texte
+	 * - paText: Physikalische Adress-Texte
+	 * - error: Rückgabe möglicher Fehlertexte
+	 *
+	 * Rückgabewert: Datensatzliste
+	 */
     private function ReadRows(string $file, array $gaText, array $paText, string &$error): array
     {
         $rows = [];
         $handle = @fopen($file, 'rb');
         if (!$handle) {
-            $error = 'Datei konnte nicht geöffnet werden: ' . $file;
+            $error = $this->Translate('File could not be opened:') . ' ' . $file;
             if ($this->ReadPropertyBoolean('DebugActive')) {
                 $this->SendDebug('ReadRows', $error, 0);
             }
@@ -387,7 +606,7 @@ class KNXLogAnalyzer extends IPSModuleStrict
             $data = json_decode($line, true);
             if (!is_array($data)) {
                 if ($this->ReadPropertyBoolean('DebugActive')) {
-                    $this->SendDebug('ReadRows', 'Ungültige JSON-Zeile ' . $lineNo, 0);
+                    $this->SendDebug('ReadRows', $this->Translate('Invalid JSON line') . ' ' . $lineNo, 0);
                 }
                 continue;
             }
@@ -415,6 +634,19 @@ class KNXLogAnalyzer extends IPSModuleStrict
         return array_reverse($rows);
     }
 
+	/**
+	 * BuildFilterOptions
+	 *
+	 * Ermittelt die verfügbaren Filterwerte für die Oberfläche.
+	 * - Erstellt Optionen für GA, PA und APCI
+	 * - Berücksichtigt aktive Filter
+	 *
+	 * Parameter:
+	 * - rows: Datensätze
+	 * - active: Aktive Filter
+	 *
+	 * Rückgabewert: Filteroptionen als Array
+	 */
     private function BuildFilterOptions(array $rows, array $active): array
     {
         return [
@@ -424,6 +656,21 @@ class KNXLogAnalyzer extends IPSModuleStrict
         ];
     }
 
+	/**
+	 * BuildOneFilter
+	 *
+	 * Erzeugt die Auswahlwerte eines einzelnen Filters.
+	 * - Ermittelt vorkommende Werte
+	 * - Zählt deren Häufigkeit
+	 * - Bereitet die Dropdownliste auf
+	 *
+	 * Parameter:
+	 * - rows: Datensätze
+	 * - field: Zu analysierendes Feld
+	 * - active: Aktive Filter
+	 *
+	 * Rückgabewert: Filteroptionen
+	 */
     private function BuildOneFilter(array $rows, string $field, array $active): array
     {
         $other = $active;
@@ -443,7 +690,7 @@ class KNXLogAnalyzer extends IPSModuleStrict
 
         $options = [[
             'value' => '',
-            'label' => 'Alle [' . count($base) . ']'
+            'label' => $this->Translate('All') . ' [' . count($base) . ']'
         ]];
 
         foreach ($counts as $value => $count) {
@@ -456,6 +703,19 @@ class KNXLogAnalyzer extends IPSModuleStrict
         return $options;
     }
 
+	/**
+	 * ApplyFilters
+	 *
+	 * Filtert Datensätze anhand der gewählten Kriterien.
+	 * - Unterstützt Gruppenadresse, physikalische Adresse und APCI
+	 * - Entfernt nicht passende Datensätze
+	 *
+	 * Parameter:
+	 * - rows: Zu filternde Datensätze
+	 * - filters: Aktive Filter
+	 *
+	 * Rückgabewert: Gefilterte Datensatzliste
+	 */
     private function ApplyFilters(array $rows, array $filters): array
     {
         return array_values(array_filter($rows, static function (array $row) use ($filters): bool {
@@ -469,6 +729,18 @@ class KNXLogAnalyzer extends IPSModuleStrict
         }));
     }
 
+	/**
+	 * SaveSettings
+	 *
+	 * Speichert Benutzereinstellungen der Visualisierung.
+	 * - Speichert Theme, UI-Modus und zuletzt gewählte Datei
+	 * - Validiert zulässige Werte
+	 *
+	 * Parameter:
+	 * - data: Zu speichernde Einstellungen
+	 *
+	 * Rückgabewert: void
+	 */
     private function SaveSettings(array $data): void
     {
         if (isset($data['theme']) && in_array($data['theme'], ['dark', 'light'], true)) {
@@ -482,11 +754,24 @@ class KNXLogAnalyzer extends IPSModuleStrict
         }
     }
 
+	/**
+	 * SaveRelations
+	 *
+	 * Speichert Gruppen- oder physikalische Adressbeziehungen.
+	 * - Validiert den Relationstyp
+	 * - Bereinigt die Eingabedaten
+	 * - Speichert die Zuordnungen in Attributen
+	 *
+	 * Parameter:
+	 * - data: Zu speichernde Relationstabellen
+	 *
+	 * Rückgabewert: Ergebnisstatus als Array
+	 */
     private function SaveRelations(array $data): array
     {
         $type = strtolower((string)($data['type'] ?? ''));
         if (!in_array($type, ['ga', 'pa'], true)) {
-            return ['ok' => false, 'error' => 'Relationstyp ungültig'];
+            return ['ok' => false, 'error' => $this->Translate('Invalid relation type')];
         }
 
         $items = $this->CleanRelations($data['items'] ?? []);
@@ -498,6 +783,18 @@ class KNXLogAnalyzer extends IPSModuleStrict
         return ['ok' => true, 'count' => count($items)];
     }
 
+	/**
+	 * GetRelations
+	 *
+	 * Liest gespeicherte Adressrelationen aus den Attributen.
+	 * - Unterstützt Gruppen- und physikalische Adressen
+	 * - Dekodiert gespeicherte JSON-Daten
+	 *
+	 * Parameter:
+	 * - type: Relationstyp (ga oder pa)
+	 *
+	 * Rückgabewert: Relationstabelle als Array
+	 */
     private function GetRelations(string $type): array
     {
         $json = $type === 'ga' ? $this->ReadAttributeString('GARelations') : $this->ReadAttributeString('PARelations');
@@ -505,6 +802,18 @@ class KNXLogAnalyzer extends IPSModuleStrict
         return is_array($data) ? $data : [];
     }
 
+	/**
+	 * CleanRelations
+	 *
+	 * Bereinigt und sortiert Relationstabellen.
+	 * - Entfernt leere Schlüssel und Werte
+	 * - Sortiert die Einträge natürlich
+	 *
+	 * Parameter:
+	 * - items: Zu bereinigende Relationstabelle
+	 *
+	 * Rückgabewert: Bereinigte Relationstabelle
+	 */
     private function CleanRelations(mixed $items): array
     {
         $out = [];
@@ -521,6 +830,18 @@ class KNXLogAnalyzer extends IPSModuleStrict
         return $out;
     }
 
+	/**
+	 * NormalizePath
+	 *
+	 * Normalisiert einen Dateipfad.
+	 * - Entfernt führende und nachfolgende Leerzeichen
+	 * - Ergänzt einen abschließenden Verzeichnistrenner
+	 *
+	 * Parameter:
+	 * - path: Zu normalisierender Pfad
+	 *
+	 * Rückgabewert: Normalisierter Pfad
+	 */
     private function NormalizePath(string $path): string
     {
         $path = trim($path);
@@ -530,6 +851,17 @@ class KNXLogAnalyzer extends IPSModuleStrict
         return rtrim($path, '/\\') . DIRECTORY_SEPARATOR;
     }
 
+	/**
+	 * TimeFromFileName
+	 *
+	 * Extrahiert Datum und Uhrzeit aus einem Logdateinamen.
+	 * - Wandelt das Dateinamensformat in ein lesbares Zeitformat um
+	 *
+	 * Parameter:
+	 * - name: Dateiname
+	 *
+	 * Rückgabewert: Formatierter Zeitstempel
+	 */
     private function TimeFromFileName(string $name): string
     {
         if (preg_match('/^(\d{8})-(\d{6})_KNXTrafficLog\.jsonl$/', $name, $m)) {
@@ -538,6 +870,18 @@ class KNXLogAnalyzer extends IPSModuleStrict
         return $name;
     }
 
+	/**
+	 * FormatTime
+	 *
+	 * Formatiert Zeitinformationen eines Logeintrags.
+	 * - Unterstützt Unix-Zeitstempel und KNX-Zeitformate
+	 * - Erzeugt eine lesbare Datums- und Uhrzeitdarstellung
+	 *
+	 * Parameter:
+	 * - data: Datensatz mit Zeitinformationen
+	 *
+	 * Rückgabewert: Formatierter Zeitstempel
+	 */
     private function FormatTime(array $data): string
     {
         if (isset($data['unix']) && is_numeric($data['unix'])) {
@@ -550,6 +894,17 @@ class KNXLogAnalyzer extends IPSModuleStrict
         return $ts;
     }
 
+	/**
+	 * FormatBytes
+	 *
+	 * Formatiert eine Byte-Anzahl in eine lesbare Darstellung.
+	 * - Unterstützt Byte, Kilobyte und Megabyte
+	 *
+	 * Parameter:
+	 * - bytes: Größe in Byte
+	 *
+	 * Rückgabewert: Formatierte Größenangabe
+	 */
     private function FormatBytes(int $bytes): string
     {
         if ($bytes >= 1048576) {
@@ -561,6 +916,82 @@ class KNXLogAnalyzer extends IPSModuleStrict
         return $bytes . ' B';
     }
 
+	/**
+	 * GetFrontendTexts
+	 *
+	 * Erstellt die übersetzbaren Textbausteine für die Tile-Visualisierung.
+	 * - Übergibt alle sichtbaren Frontend-Texte zentral an JavaScript
+	 * - Nutzt die Symcon-Lokalisierung über locale.json
+	 * - Vermeidet fest verdrahtete Oberflächentexte im Frontend
+	 *
+	 * Parameter: keine
+	 * Rückgabewert: Übersetzte Frontend-Texte als Array
+	 */
+    private function GetFrontendTexts(): array
+    {
+        $keys = [
+            'Log file',
+            'Rows per page',
+            'GA',
+            'PA',
+            'APCI',
+            'Theme:',
+            'UI:',
+            'Dark',
+            'Light',
+            'Compact',
+            'Standard',
+            'Apply filter',
+            'Refresh',
+            'Newer',
+            'Older',
+            'GA long texts',
+            'PA long texts',
+            'Long texts',
+            'Close',
+            'Paste CSV: Address;Long text or Address,Long text. Saving replaces the assignments of this type.',
+            'CSV import',
+            'Current assignments',
+            'Apply CSV',
+            'Save',
+            'Date/Time',
+            'GA long text',
+            'PA long text',
+            'Payload',
+            'Write/Read',
+            'LEN',
+            'No entries found.',
+            'File:',
+            'Size:',
+            'Page:',
+            'Range:',
+            'of',
+            'Total:',
+            'Load time:',
+            'Updated:',
+            'CSV applied.'
+        ];
+
+        $texts = [];
+        foreach ($keys as $key) {
+            $texts[$key] = $this->Translate($key);
+        }
+
+        return $texts;
+    }
+
+	/**
+	 * Json
+	 *
+	 * Kodiert Daten als JSON-String.
+	 * - Verwendet UTF-8 ohne Escaping von Unicode-Zeichen
+	 * - Erhält Schrägstriche unverändert
+	 *
+	 * Parameter:
+	 * - data: Zu kodierende Daten
+	 *
+	 * Rückgabewert: JSON-String
+	 */
     private function Json(mixed $data): string
     {
         return json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

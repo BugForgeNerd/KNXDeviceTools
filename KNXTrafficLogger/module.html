@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+:root{--accent:#d37800;--radius:12px;--radius-sm:8px}html.theme-dark,body.theme-dark{color-scheme:dark}html.theme-light,body.theme-light{color-scheme:light}body.theme-dark{--bg:rgba(20,20,20,.35);--bg-soft:rgba(255,255,255,.05);--bg-input:rgba(0,0,0,.25);--bg-pop:rgba(30,30,30,.97);--border:rgba(255,255,255,.12);--text:#f5f5f5;--muted:#b8b8b8;--row:rgba(255,255,255,.07);--line:rgba(255,255,255,.10);--msg:#ffd2d2;--btn:rgba(77,163,255,.18);--modal:rgba(0,0,0,.55)}body.theme-light{--bg:rgba(255,255,255,.82);--bg-soft:rgba(0,0,0,.03);--bg-input:rgba(255,255,255,.92);--bg-pop:rgba(255,255,255,.98);--border:rgba(0,0,0,.12);--text:#1f2937;--muted:#6b7280;--row:rgba(0,0,0,.025);--line:rgba(0,0,0,.10);--msg:#9f1239;--btn:rgba(77,163,255,.18);--modal:rgba(0,0,0,.35)}*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;color:var(--text);background:transparent}.wrapper{padding:12px}.card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.12)}.toolbar{display:grid;gap:10px;padding:12px;background:var(--bg-soft);border-bottom:1px solid var(--border)}.toolbar-grid,.button-row,.meta{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start}label{display:grid;gap:6px;font-size:12px;color:var(--muted)}select,textarea{width:100%;min-height:34px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-input);color:var(--text);padding:8px 10px}button{min-height:30px;padding:6px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--btn);color:var(--text);cursor:pointer;white-space:nowrap}button.secondary{background:var(--bg-soft)}button:disabled{opacity:.45;cursor:default}.field-file{width:270px}.field-small{width:110px}.field-filter{width:180px}.inline{display:inline-flex;align-items:center;gap:6px}.inline select{min-width:110px}.meta{padding:8px 12px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--border)}.message{display:none;padding:10px 12px;color:var(--msg);border-bottom:1px solid var(--border);white-space:pre-wrap}.message.show{display:block}.table-wrap{overflow:auto;max-height:65vh;user-select:text}table{width:100%;border-collapse:collapse;font-size:13px}th{position:sticky;top:0;background:var(--accent);color:#fff;text-align:left;padding:7px 8px;border-right:1px solid rgba(255,255,255,.18);z-index:1}td{padding:8px 8px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);vertical-align:top}tr:nth-child(even){background:var(--row)}th:last-child,td:last-child{border-right:none}.col-time{width:155px;white-space:nowrap}.col-ga,.col-pa,.col-apci,.col-len{width:90px;white-space:nowrap}.col-payload{width:130px;white-space:nowrap}.empty{padding:16px;color:var(--muted)}body.compact .toolbar{padding:9px;gap:8px}body.compact label{font-size:11px;gap:4px}body.compact select,body.compact textarea{min-height:30px;padding:6px 8px;font-size:12px}body.compact button{min-height:28px;padding:4px 8px;font-size:12px}body.compact table{font-size:12px}body.compact td{padding:6px 8px}body.compact th{padding:7px 8px}.modal{position:fixed;inset:0;background:var(--modal);display:none;align-items:center;justify-content:center;padding:18px;z-index:20}.modal.open{display:flex}.modal-card{width:min(900px,96vw);max-height:92vh;overflow:auto;background:var(--bg-pop);border:1px solid var(--border);border-radius:var(--radius)}.modal-head,.modal-foot{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:12px;border-bottom:1px solid var(--border)}.modal-foot{border-top:1px solid var(--border);border-bottom:0}.modal-body{display:grid;gap:10px;padding:12px}.hint{font-size:12px;color:var(--muted)}.split{display:grid;grid-template-columns:1fr 1fr;gap:10px}textarea{height:260px;font-family:Consolas,monospace}@media(max-width:800px){.field-file,.field-filter{width:100%}.split{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrapper"><div class="card">
+  <div class="toolbar">
+    <div class="toolbar-grid">
+      <label class="field-file">Logdatei<select id="fileSelect"></select></label>
+      <label class="field-small">Zeilen pro Seite<select id="pageSize"><option>20</option><option selected>50</option><option>100</option><option>200</option><option>500</option><option>1000</option><option>2000</option><option>3000</option></select></label>
+      <label class="field-filter">GA<select id="gaFilter"></select></label>
+      <label class="field-filter">PA<select id="paFilter"></select></label>
+      <label class="field-filter">APCI<select id="apciFilter"></select></label>
+    </div>
+    <div class="button-row">
+      <label class="inline"><span>Theme:</span><select id="theme"><option value="dark">Dark</option><option value="light">Light</option></select></label>
+      <label class="inline"><span>UI:</span><select id="ui"><option value="compact">Kompakt</option><option value="standard">Standard</option></select></label>
+      <button id="apply">Filter anwenden</button>
+      <button id="refresh" class="secondary">Aktualisieren</button>
+      <button id="newer" class="secondary">Neuere</button>
+      <button id="older" class="secondary">Ältere</button>
+      <button id="gaBtn" class="secondary">GA-Langtexte</button>
+      <button id="paBtn" class="secondary">PA-Langtexte</button>
+    </div>
+  </div>
+  <div class="meta" id="meta"></div>
+  <div class="message" id="message"></div>
+  <div class="table-wrap"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
+</div></div>
+<div class="modal" id="modal"><div class="modal-card">
+  <div class="modal-head"><strong id="modalTitle">Langtexte</strong><button id="close" class="secondary">Schließen</button></div>
+  <div class="modal-body">
+    <div class="hint">CSV einfügen: Adresse;Langtext oder Adresse,Langtext. Beim Speichern werden die Zuordnungen dieses Typs ersetzt.</div>
+    <div class="split"><label>CSV-Import<textarea id="csv"></textarea></label><label>Aktuelle Zuordnungen<textarea id="relations"></textarea></label></div>
+  </div>
+  <div class="modal-foot"><span class="hint" id="modalInfo"></span><div><button id="takeCsv" class="secondary">CSV übernehmen</button><button id="saveRel">Speichern</button></div></div>
+</div></div>
+<script>
+let state = JSON.parse(decodeURIComponent(escape(atob('%%INITIAL_STATE_B64%%'))));
+let relType = 'ga';
+const $ = id => document.getElementById(id);
+const columnDefs = [
+  {key:'time', title:'Datum/Zeit', cls:'col-time'},
+  {key:'ga', title:'GA', cls:'col-ga'},
+  {key:'gaText', title:'GA Langtext', cls:''},
+  {key:'pa', title:'PA', cls:'col-pa'},
+  {key:'paText', title:'PA Langtext', cls:''},
+  {key:'payload', title:'Payload', cls:'col-payload'},
+  {key:'apci', title:'Write/Read', cls:'col-apci'},
+  {key:'len', title:'LEN', cls:'col-len'}
+];
+function esc(v){return String(v ?? '').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+function setTheme(theme,ui){document.body.classList.toggle('theme-light',theme==='light');document.body.classList.toggle('theme-dark',theme!=='light');document.documentElement.classList.toggle('theme-light',theme==='light');document.documentElement.classList.toggle('theme-dark',theme!=='light');document.body.classList.toggle('compact',ui!=='standard');}
+function fillSelect(el,items,value){el.innerHTML='';(items||[]).forEach(i=>{let o=document.createElement('option');o.value=i.value ?? i.name ?? '';o.textContent=i.label ?? i.name ?? '';if(String(o.value)===String(value ?? ''))o.selected=true;el.appendChild(o);});}
+function activeColumns(){let c=state.columns||{};return columnDefs.filter(d=>c[d.key]!==false);}
+function renderTable(rows){let cols=activeColumns();$('thead').innerHTML='<tr>'+cols.map(c=>`<th class="${esc(c.cls)}">${esc(c.title)}</th>`).join('')+'</tr>';if(!rows.length){$('tbody').innerHTML=`<tr><td colspan="${cols.length}"><div class="empty">Keine Einträge gefunden.</div></td></tr>`;return;}$('tbody').innerHTML=rows.map(r=>'<tr>'+cols.map(c=>`<td class="${esc(c.cls)}">${esc(r[c.key])}</td>`).join('')+'</tr>').join('');}
+function render(s){state=s||{};const set=state.settings||{};setTheme(set.theme,set.ui);$('theme').value=set.theme||'dark';$('ui').value=set.ui||'compact';$('pageSize').value=String(set.pageSize||50);fillSelect($('fileSelect'),state.files||[],state.selectedFile);fillSelect($('gaFilter'),state.filterOptions?.ga,set.filters?.ga);fillSelect($('paFilter'),state.filterOptions?.pa,set.filters?.pa);fillSelect($('apciFilter'),state.filterOptions?.apci,set.filters?.apci);const m=state.meta||{}, f=state.fileInfo||{};$('meta').innerHTML=`<span>Datei: ${esc(f.path||'-')}</span><span>Größe: ${esc(f.sizeText||'-')}</span><span>Seite: ${esc(m.page||1)} / ${esc(m.pages||1)}</span><span>Bereich: ${esc(m.from||0)}–${esc(m.to||0)} von ${esc(m.filtered||0)}</span><span>Gesamt: ${esc(m.total||0)}</span><span>Ladezeit: ${esc(m.loadMs||0)} ms</span><span>Stand: ${esc(m.stand||'')}</span>`;$('message').textContent=state.error||'';$('message').classList.toggle('show',!!state.error);renderTable(state.rows||[]);$('newer').disabled=(m.page||1)<=1;$('older').disabled=(m.page||1)>=(m.pages||1);}
+function payload(page){return{file:$('fileSelect').value,pageSize:parseInt($('pageSize').value,10),page:page||1,theme:$('theme').value,ui:$('ui').value,filters:{ga:$('gaFilter').value,pa:$('paFilter').value,apci:$('apciFilter').value}};}
+async function action(id,data){try{if(typeof requestAction==='function'){await requestAction(id,JSON.stringify(data||{}));}}catch(e){$('message').textContent=String(e&&e.message?e.message:e);$('message').classList.add('show');}}
+function load(page){action('Load',payload(page));}
+function handleMessage(message){try{state=typeof message==='string'?JSON.parse(message):message;render(state);if(state&&state.modalInfo){$('modalInfo').textContent=state.modalInfo;}}catch(e){console.error(e);$('message').textContent=String(e&&e.message?e.message:e);$('message').classList.add('show');}}
+$('apply').onclick=()=>load(1);$('refresh').onclick=()=>load(state.meta?.page||1);$('newer').onclick=()=>load(Math.max(1,(state.meta?.page||1)-1));$('older').onclick=()=>load((state.meta?.page||1)+1);$('fileSelect').onchange=()=>load(1);$('pageSize').onchange=()=>load(1);
+$('theme').onchange=()=>{setTheme($('theme').value,$('ui').value);action('SaveSettings',payload(state.meta?.page||1));};$('ui').onchange=$('theme').onchange;
+function parse(text){let out={};String(text||'').split(/\r?\n/).forEach(line=>{line=line.trim();if(!line)return;let p=line.split(';');if(p.length<2)p=line.split(',');if(p.length<2)p=line.split(/\t/);let a=(p.shift()||'').trim(),t=p.join(';').trim();if(a&&t)out[a]=t;});return out;}
+function relText(type){let r=state.relations?.[type]||{};return Object.keys(r).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).map(k=>`${k};${r[k]}`).join('\n');}
+function openModal(type){relType=type;$('modalTitle').textContent=(type==='ga'?'GA':'PA')+'-Langtexte';$('csv').value='';$('relations').value=relText(type);$('modalInfo').textContent='';$('modal').classList.add('open');}
+$('gaBtn').onclick=()=>openModal('ga');$('paBtn').onclick=()=>openModal('pa');$('close').onclick=()=>$('modal').classList.remove('open');$('takeCsv').onclick=()=>{let all={...parse($('relations').value),...parse($('csv').value)};$('relations').value=Object.entries(all).map(([k,v])=>`${k};${v}`).join('\n');$('modalInfo').textContent='CSV übernommen.';};$('saveRel').onclick=()=>{let items=parse($('relations').value);action('SaveRelations',{type:relType,items:items,view:payload(state.meta?.page||1)});};
+render(state);
+</script>
+</body>
+</html>

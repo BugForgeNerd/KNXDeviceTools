@@ -12,6 +12,7 @@
   - [KNX Device Watcher](#knx-device-watcher)
   - [KNX Device Trigger](#knx-device-trigger)
   - [KNX Traffic Logger](#knx-traffic-logger)
+  - [KNX Log Analyzer](#knx-log-analyzer)
 - [Installation](#installation)
 - [Konfiguration](#konfiguration)
 - [DPT-Unterstützung](#dpt-unterstützung)
@@ -156,6 +157,58 @@ Beispiele:
 Der Trigger ist für den gezielten Aufruf eigener, dafür vorgesehener Modulmethoden gedacht. Die Zielinstanz und der Funktionsname müssen bewusst konfiguriert werden. Es wird empfohlen, nur eigene Module und klar definierte Funktionen zu verwenden.
 
 ---
+
+
+
+### KNX Log Analyzer
+
+Der **KNX Log Analyzer** dient zur komfortablen Auswertung der vom KNX Traffic Logger erzeugten JSONL-Dateien direkt innerhalb von IP-Symcon. Das Modul stellt die Logdaten in einer Tile-Ansicht dar und ermöglicht Filterung, Paging sowie die Pflege von Langtexten für Gruppenadressen (GA) und physikalische Adressen (PA).
+
+#### Einsatzbereich
+
+Das Modul eignet sich insbesondere für:
+
+- Analyse aufgezeichneter KNX-Telegramme.
+- Fehlersuche im KNX-Bus.
+- Dokumentation unbekannter Gruppenadressen.
+- Zuordnung von Geräteadressen zu realen KNX-Komponenten.
+- Komfortable Auswertung großer Logdateien ohne externe Werkzeuge.
+
+#### Einstellungen
+
+| Einstellung | Beschreibung |
+|---|---|
+| Ordner der KNX-Logdateien | Verzeichnis mit den vom KNX Traffic Logger erzeugten JSONL-Dateien. |
+| Debugausgaben aktiv | Aktiviert zusätzliche Diagnoseausgaben im Symcon-Debug. |
+| GA Langtext anzeigen | Blendet die Langtextspalte für Gruppenadressen ein. |
+| PA Langtext anzeigen | Blendet die Langtextspalte für physikalische Adressen ein. |
+| Payload anzeigen | Blendet die Payload-Spalte ein. |
+| Write/Read anzeigen | Blendet die APCI-Spalte ein. |
+| LEN anzeigen | Blendet die Telegrammlänge ein. |
+
+#### Funktionen
+
+- Automatische Erkennung aller Dateien nach dem Muster `*_KNXTrafficLog.jsonl`.
+- Seitennavigation für große Logdateien.
+- Filterung nach GA, PA und APCI.
+- Speicherung individueller Langtexte für Gruppenadressen.
+- Speicherung individueller Langtexte für physikalische Adressen.
+- Helle und dunkle Darstellung.
+- Kompakte und Standardansicht.
+- Direkte Anzeige innerhalb einer Symcon-Tile.
+
+#### Zusammenspiel mit dem KNX Traffic Logger
+
+Der KNX Log Analyzer erzeugt selbst keine Logdateien. Er wertet ausschließlich die vom KNX Traffic Logger gespeicherten JSONL-Dateien aus.
+
+Empfohlener Ablauf:
+
+1. KNX Traffic Logger installiert und aktivieren.
+2. Logdateien im Verzeichnis `logs/knx/` erzeugen lassen.
+3. KNX Log Analyzer anlegen.
+4. Gleiches Logverzeichnis konfigurieren.
+5. Logdateien komfortabel auswerten.
+
 
 ### KNX Traffic Logger
 
@@ -302,7 +355,7 @@ Typische Prüfpunkte:
 
 ## Versionshinweise
 
-### 1.0.0
+### 1.1.0
 
 - Erweiterung der Modulsammlung um KNX Traffic Logger.
 - Telegrammfilterung nach GA und PA.
@@ -322,3 +375,40 @@ Dieses Projekt steht unter der Apache-2.0-Lizenz. Details siehe `LICENSE`.
 ## Danksagung
 
 Vielen Dank an das Symcon-Team für die Erweiterungen am KNX-Gateway und die Bereitstellung der Entwicklungswerkzeuge. Die Möglichkeit, Gruppenadresse und Geräteadresse aus dem Telegrammfluss auszuwerten, eröffnet zusätzliche Diagnose- und Automationsmöglichkeiten für KNX-Anwendungen in IP-Symcon.
+
+
+### Screenshots
+
+Hier einige Screenshots aus den Modulen und aus der Tile-View.
+
+<div>
+<img width="800" alt="Screenshot" src="imgs/Screenshot_KNXDeviceTools1.jpg">
+</div>
+
+<div>
+<img width="800" alt="Screenshot" src="imgs/Screenshot_KNXDeviceTools2.jpg">
+</div>
+
+<div>
+<img width="800" alt="Screenshot" src="imgs/Screenshot_KNXDeviceTools3.jpg">
+</div>
+
+<div>
+<img width="800" alt="Screenshot" src="imgs/Screenshot_KNXDeviceTools4.jpg">
+</div>
+
+<div>
+<img width="800" alt="Screenshot" src="imgs/Screenshot_KNXDeviceTools5.jpg">
+</div>
+
+<div>
+<img width="800" alt="Screenshot" src="imgs/Screenshot_KNXDeviceTools6.jpg">
+</div>
+
+<div>
+<img width="800" alt="Screenshot" src="imgs/Screenshot_KNXDeviceTools7.jpg">
+</div>
+
+<div>
+<img width="800" alt="Screenshot" src="imgs/Screenshot_KNXDeviceTools8.jpg">
+</div>
