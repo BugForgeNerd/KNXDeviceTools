@@ -1,12 +1,16 @@
 {
-  "id": "{208ABC47-7AC7-7D1D-97FA-2EBF2B23C81B}",
-  "name": "KNXLogAnalyzer",
+  "id": "{E26AE98C-1FC9-755B-E766-3FB448A345A7}",
+  "name": "KNX Traffic Logger",
   "type": 3,
   "vendor": "KNX",
   "aliases": [],
-  "parentRequirements": [],
+  "parentRequirements": [
+    "{42DFD4E4-5831-4A27-91B9-6FF1B2960260}"
+  ],
   "childRequirements": [],
-  "implemented": [],
-  "prefix": "KNXLOGAN",
-  "url": "https://github.com/BugForgeNerd/KNXDeviceTools"
+  "implemented": [
+    "{8A4D3B17-F8D7-4905-877F-9E69CEC3D579}"
+  ],
+  "prefix": "KNXTL",
+  "url": ""
 }
